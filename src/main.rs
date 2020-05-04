@@ -75,7 +75,7 @@ impl State {
 
     fn won(&self) -> Option<Token> {
         for column in 0..WIDTH {
-            for row in 0..HEIGHT - LINE {
+            for row in 0..HEIGHT - LINE + 1 {
                 match self.count_vertical(row, column) {
                     (4, _) => {
                         return Some(Token::Red);
@@ -88,7 +88,7 @@ impl State {
             }
         }
 
-        for column in 0..WIDTH - LINE {
+        for column in 0..WIDTH - LINE + 1 {
             for row in 0..HEIGHT {
                 match self.count_horizontal(row, column) {
                     (4, _) => {
@@ -102,8 +102,8 @@ impl State {
             }
         }
 
-        for column in 0..WIDTH - LINE {
-            for row in 0..HEIGHT - LINE {
+        for column in 0..WIDTH - LINE + 1 {
+            for row in 0..HEIGHT - LINE + 1 {
                 match self.count_diag_ne(row, column) {
                     (4, _) => {
                         return Some(Token::Red);
@@ -117,7 +117,7 @@ impl State {
         }
 
         for column in LINE - 1..WIDTH {
-            for row in 0..HEIGHT - LINE {
+            for row in 0..HEIGHT - LINE + 1 {
                 match self.count_diag_nw(row, column) {
                     (4, _) => {
                         return Some(Token::Red);
@@ -133,9 +133,72 @@ impl State {
         None
     }
 
-    fn count_vertical(&self, row: usize, column: usize) -> (u8, u8) {
-        let mut count_r = 0u8;
-        let mut count_y = 0u8;
+    fn score(&self) -> (i32, i32) {
+        let mut score_r = 0i32;
+        let mut score_y = 0i32;
+
+        for column in 0..WIDTH {
+            for row in 0..HEIGHT - LINE + 1 {
+                match self.count_vertical(row, column) {
+                    (n, 0) => {
+                        score_r += n;
+                    }
+                    (0, n) => {
+                        score_y += n;
+                    }
+                    _ => (),
+                }
+            }
+        }
+
+        for column in 0..WIDTH - LINE + 1 {
+            for row in 0..HEIGHT {
+                match self.count_horizontal(row, column) {
+                    (n, 0) => {
+                        score_r += n;
+                    }
+                    (0, n) => {
+                        score_y += n;
+                    }
+                    _ => (),
+                }
+            }
+        }
+
+        for column in 0..WIDTH - LINE + 1 {
+            for row in 0..HEIGHT - LINE + 1 {
+                match self.count_diag_ne(row, column) {
+                    (n, 0) => {
+                        score_r += n;
+                    }
+                    (0, n) => {
+                        score_y += n;
+                    }
+                    _ => (),
+                }
+            }
+        }
+
+        for column in LINE - 1..WIDTH {
+            for row in 0..HEIGHT - LINE + 1 {
+                match self.count_diag_nw(row, column) {
+                    (n, 0) => {
+                        score_r += n;
+                    }
+                    (0, n) => {
+                        score_y += n;
+                    }
+                    _ => (),
+                }
+            }
+        }
+
+        (score_r, score_y)
+    }
+
+    fn count_vertical(&self, row: usize, column: usize) -> (i32, i32) {
+        let mut count_r = 0i32;
+        let mut count_y = 0i32;
 
         for i in 0..LINE {
             if let Some(t) = self.get(row + i, column) {
@@ -153,9 +216,9 @@ impl State {
         (count_r, count_y)
     }
 
-    fn count_horizontal(&self, row: usize, column: usize) -> (u8, u8) {
-        let mut count_r = 0u8;
-        let mut count_y = 0u8;
+    fn count_horizontal(&self, row: usize, column: usize) -> (i32, i32) {
+        let mut count_r = 0i32;
+        let mut count_y = 0i32;
 
         for i in 0..LINE {
             if let Some(t) = self.get(row, column + i) {
@@ -173,9 +236,9 @@ impl State {
         (count_r, count_y)
     }
 
-    fn count_diag_ne(&self, row: usize, column: usize) -> (u8, u8) {
-        let mut count_r = 0u8;
-        let mut count_y = 0u8;
+    fn count_diag_ne(&self, row: usize, column: usize) -> (i32, i32) {
+        let mut count_r = 0i32;
+        let mut count_y = 0i32;
 
         for i in 0..LINE {
             if let Some(t) = self.get(row + i, column + i) {
@@ -193,9 +256,9 @@ impl State {
         (count_r, count_y)
     }
 
-    fn count_diag_nw(&self, row: usize, column: usize) -> (u8, u8) {
-        let mut count_r = 0u8;
-        let mut count_y = 0u8;
+    fn count_diag_nw(&self, row: usize, column: usize) -> (i32, i32) {
+        let mut count_r = 0i32;
+        let mut count_y = 0i32;
 
         for i in 0..LINE {
             if let Some(t) = self.get(row + i, column - i) {
@@ -260,8 +323,7 @@ fn main() {
     let mut state = State::new();
 
     // counter of rounds
-    // there are at most HEIGHT*WITDH rounds so a u8 is enough
-    let mut count = 0u8;
+    let mut count = 0i32;
 
     // play until some player wins or there is a draw
     let mut end_of_game = false;
@@ -275,6 +337,9 @@ fn main() {
 
         // show state of the game...
         println!("\n{}\n", state);
+        let scores = state.score();
+        println!("Red: {}", scores.0);
+        println!("Yellow: {}", scores.1);
 
         // ... and ask player to play
         println!("Player {} plays:", &player);
@@ -321,4 +386,7 @@ fn main() {
         // next round
         count += 1;
     }
+
+    // show final state of the game
+    println!("\n{}\n", state);
 }
