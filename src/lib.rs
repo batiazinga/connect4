@@ -29,12 +29,9 @@ impl State {
         }
     }
 
-    fn get(&self, row: usize, column: usize) -> Option<Token> {
-        match self.content[column][row] {
-            1 => Some(Token::Red),
-            2 => Some(Token::Yellow),
-            _ => None, // 0 (or anything else) is considered "empty"
-        }
+    pub fn can_append(&self, column: usize) -> bool {
+        // is there at least one free cell in column?
+        self.content[column][HEIGHT - 1] == 0
     }
 
     pub fn append(&mut self, column: usize, t: &Token) -> Result<(), ()> {
@@ -58,6 +55,32 @@ impl State {
 
         // could not add token because this column is already full
         Err(())
+    }
+
+    pub fn pop(&mut self, column: usize) -> Option<Token> {
+        for i in (0..HEIGHT).rev() {
+            let t = self.content[column][i];
+
+            // if empty, try below
+            if t == 0 {
+                continue;
+            }
+
+            // not empty, so empty it and return the token
+            self.content[column][i] = 0;
+            match t {
+                1 => {
+                    return Some(Token::Red);
+                }
+                2 => {
+                    return Some(Token::Yellow);
+                }
+                _=>(),
+            }
+        }
+
+        // cound not find any token to pop
+        None
     }
 
     pub fn rounds_left(&self) -> u8 {
@@ -273,6 +296,14 @@ impl State {
         }
 
         (count_r, count_y)
+    }
+
+    fn get(&self, row: usize, column: usize) -> Option<Token> {
+        match self.content[column][row] {
+            1 => Some(Token::Red),
+            2 => Some(Token::Yellow),
+            _ => None, // 0 (or anything else) is considered "empty"
+        }
     }
 }
 
