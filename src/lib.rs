@@ -1,8 +1,79 @@
 use std::fmt;
 
-pub const WIDTH: usize = 7;
+const WIDTH: usize = 7;
 const HEIGHT: usize = 6;
 const LINE: usize = 4;
+
+pub trait Player {
+    fn play(&self, s: &State) -> usize;
+    fn win(&self, s: &State);
+    fn lose(&self, s: &State);
+    fn draw(&self, s: &State);
+}
+
+pub fn play(player1: impl Player, player2: impl Player) {
+    // keep track of the number of moves
+    let mut count = 0i32;
+
+    // keep track of the current state of the game
+    let mut state = State::new();
+
+    // run the game!
+    let mut end_of_game = false;
+    while !end_of_game {
+        // player 1 is always red and always start
+        let tok = if count % 2 == 0 {
+            Token::Red
+        } else {
+            Token::Yellow
+        };
+
+        let mut valid_move = false;
+        while !valid_move {
+            let mv = match tok {
+                Token::Red => player1.play(&state),
+                Token::Yellow => player2.play(&state),
+            };
+
+            if mv >= WIDTH {
+                continue;
+            }
+            if let Err(()) = state.append(mv, &tok) {
+                continue;
+            }
+
+            // validate move
+            valid_move = true;
+        }
+
+        // is this a win?
+        match state.win() {
+            None => {
+                if state.rounds_left() == 0 {
+                    player1.draw(&state);
+                    player2.draw(&state);
+                    end_of_game = true;
+                }
+            }
+            Some(t) => {
+                match t {
+                    Token::Red => {
+                        player1.win(&state);
+                        player2.win(&state);
+                    }
+                    Token::Yellow => {
+                        player2.win(&state);
+                        player1.win(&state);
+                    }
+                }
+                end_of_game = true;
+            }
+        }
+
+        // next round
+        count += 1;
+    }
+}
 
 pub enum Token {
     Red,
@@ -27,6 +98,10 @@ impl State {
         State {
             content: [[0; HEIGHT]; WIDTH],
         }
+    }
+
+    pub fn width(&self) -> usize {
+        WIDTH
     }
 
     pub fn can_append(&self, column: usize) -> bool {
@@ -75,7 +150,7 @@ impl State {
                 2 => {
                     return Some(Token::Yellow);
                 }
-                _=>(),
+                _ => (),
             }
         }
 
@@ -95,7 +170,7 @@ impl State {
         count
     }
 
-    pub fn won(&self) -> Option<Token> {
+    pub fn win(&self) -> Option<Token> {
         for column in 0..WIDTH {
             for row in 0..HEIGHT - LINE + 1 {
                 match self.count_vertical(row, column) {
