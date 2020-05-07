@@ -1,9 +1,21 @@
-use connect4::{self, State};
+use connect4::{self, State, Token};
 use std::io;
 
-struct Human {}
+struct Human {
+    color: Token,
+}
+
+impl Human {
+    fn new() -> Human {
+        Human { color: Token::Red }
+    }
+}
 
 impl connect4::Player for Human {
+    fn start(&mut self, t: Token) {
+        self.color = t;
+    }
+
     fn play(&self, state: &State) -> usize {
         // show state of the game...
         println!("\n{}\n", state);
@@ -38,5 +50,5 @@ impl connect4::Player for Human {
 fn main() {
     println!("Welcome to the connect four game!");
 
-    connect4::play(Human {}, Human {});
+    connect4::play(Human::new(), Human::new());
 }

@@ -5,13 +5,18 @@ const HEIGHT: usize = 6;
 const LINE: usize = 4;
 
 pub trait Player {
+    fn start(&mut self, tok: Token);
     fn play(&self, s: &State) -> usize;
     fn win(&self, s: &State);
     fn lose(&self, s: &State);
     fn draw(&self, s: &State);
 }
 
-pub fn play(player1: impl Player, player2: impl Player) {
+pub fn play(mut player1: impl Player, mut player2: impl Player) {
+    // player 1 is red
+    player1.start(Token::Red);
+    player2.start(Token::Yellow);
+
     // keep track of the number of moves
     let mut count = 0i32;
 
