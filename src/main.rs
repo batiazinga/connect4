@@ -2,18 +2,23 @@ use connect4::{self, State, Token};
 use std::io;
 
 struct Human {
+    name: String,
     color: Token,
 }
 
 impl Human {
-    fn new() -> Human {
-        Human { color: Token::Red }
+    fn new(name: &str) -> Human {
+        Human {
+            name: name.to_string(),
+            color: Token::Red,
+        }
     }
 }
 
 impl connect4::Player for Human {
     fn start(&mut self, t: Token) {
         self.color = t;
+        println!("Player {} is playing {}", self.name, self.color);
     }
 
     fn play(&self, state: &State) -> usize {
@@ -24,7 +29,7 @@ impl connect4::Player for Human {
         println!("Yellow: {}", scores.1);
 
         // ... and ask player to play
-        println!("Play:");
+        println!("{} plays", self.name);
         let mut mv = String::new();
         io::stdin()
             .read_line(&mut mv)
@@ -35,14 +40,17 @@ impl connect4::Player for Human {
     }
 
     fn win(&self, state: &State) {
+        println!("{} wins!", self.name);
         println!("\n{}\n", state);
     }
 
     fn lose(&self, state: &State) {
+        println!("{} loses!", self.name);
         println!("\n{}\n", state);
     }
 
     fn draw(&self, state: &State) {
+        println!("This is a draw!");
         println!("\n{}\n", state);
     }
 }
@@ -50,5 +58,5 @@ impl connect4::Player for Human {
 fn main() {
     println!("Welcome to the connect four game!");
 
-    connect4::play(Human::new(), Human::new());
+    connect4::play(Human::new("player1"), Human::new("player2"));
 }
