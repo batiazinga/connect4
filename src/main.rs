@@ -1,4 +1,5 @@
 use connect4::{self, State, Token};
+use rand::Rng;
 use std::io;
 
 struct Human {
@@ -55,8 +56,27 @@ impl connect4::Player for Human {
     }
 }
 
+struct Rand {}
+
+impl connect4::Player for Rand {
+    fn start(&mut self, _t: Token) { /* no op */
+    }
+
+    fn play(&self, _s: &State) -> usize {
+        let mv = rand::thread_rng().gen_range(0, 7);
+        mv
+    }
+
+    fn win(&self, _s: &State) { /* no op */
+    }
+    fn lose(&self, _s: &State) { /* no op */
+    }
+    fn draw(&self, _s: &State) { /* no op */
+    }
+}
+
 fn main() {
     println!("Welcome to the connect four game!");
 
-    connect4::play(Human::new("player1"), Human::new("player2"));
+    connect4::play(Human::new("player1"), Rand {});
 }
