@@ -64,11 +64,11 @@ pub fn play(mut player1: impl Player, mut player2: impl Player) {
                 match t {
                     Token::Red => {
                         player1.win(&state);
-                        player2.win(&state);
+                        player2.lose(&state);
                     }
                     Token::Yellow => {
+                        player1.lose(&state);
                         player2.win(&state);
-                        player1.win(&state);
                     }
                 }
                 end_of_game = true;
@@ -383,6 +383,14 @@ impl State {
             1 => Some(Token::Red),
             2 => Some(Token::Yellow),
             _ => None, // 0 (or anything else) is considered "empty"
+        }
+    }
+}
+
+impl Clone for State {
+    fn clone(&self) -> Self {
+        State {
+            content: self.content,
         }
     }
 }
