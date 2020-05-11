@@ -75,8 +75,62 @@ impl connect4::Player for Rand {
     }
 }
 
+struct BestNextPly {
+    color: Token,
+}
+
+impl BestNextPly {
+    fn new() -> BestNextPly {
+        BestNextPly { color: Token::Red }
+    }
+}
+
+impl connect4::Player for BestNextPly {
+    fn start(&mut self, t: Token) {
+        self.color = t;
+    }
+
+    fn play(&self, s: &State) -> usize {
+        // best next move and its associated score
+        let mut best_next = 0usize;
+        let mut max_score = 0i32;
+
+        // clone the state to be able to simulate next moves
+        let mut cp = s.clone();
+        for i in 0..s.width() {
+            // simulate next move
+            if let Err(()) = cp.append(i, &self.color) {
+                continue;
+            }
+
+            let scores = cp.score();
+            let mut score = scores.0;
+            if let Token::Yellow = self.color {
+                score = scores.1;
+            }
+
+            if score > max_score {
+                best_next = i;
+                max_score = score;
+            }
+
+            // undo next move
+            cp.pop(i);
+        }
+
+        best_next
+    }
+
+    fn win(&self, _s: &State) { /* no op */
+    }
+    fn lose(&self, _s: &State) { /* no op */
+    }
+    fn draw(&self, _s: &State) { /* no op */
+    }
+}
+
 fn main() {
     println!("Welcome to the connect four game!");
 
-    connect4::play(Human::new("player1"), Rand {});
+    connect4::play(Human::new("player1"), BestNextPly::new());
 }
