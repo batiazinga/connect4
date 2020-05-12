@@ -104,9 +104,9 @@ impl connect4::Player for BestNextPly {
             }
 
             let scores = cp.score();
-            let mut score = scores.0;
+            let mut score = scores.0 - scores.1; // red by default
             if let Token::Yellow = self.color {
-                score = scores.1;
+                score = -score;
             }
 
             if score > max_score {
