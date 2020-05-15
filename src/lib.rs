@@ -363,36 +363,64 @@ impl Clone for State {
 
 impl fmt::Display for State {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut s = String::with_capacity((HEIGHT + 2) * (WIDTH + 3));
+        let mut s = String::with_capacity((2 * self.height() + 1) * (4 * self.width() + 2));
 
-        s.push('+');
-        for _i in 0..WIDTH {
-            s.push('-');
+        // top of the box
+        s.push('╔');
+        for i in 0..2 * self.width() - 1 {
+            if i % 2 == 0 {
+                s.push_str("═══");
+            } else {
+                s.push('╤');
+            }
         }
-        s.push('+');
+        s.push('╗');
         s.push('\n');
 
-        for i in (0..HEIGHT).rev() {
-            s.push('|');
-            for j in 0..WIDTH {
-                match self.get(i, j) {
-                    None => {
-                        s.push(' ');
-                    }
-                    Some(t) => {
-                        s.push_str(&format!("{}", t)[..]);
+        // grid with content of the board
+        for i in (0..2 * self.height() - 1).rev() {
+            if i % 2 == 0 {
+                s.push('║');
+                for j in 0..2 * self.width() - 1 {
+                    if j % 2 == 0 {
+                        match self.get(i / 2, j / 2) {
+                            None => {
+                                s.push_str("   ");
+                            }
+                            Some(t) => {
+                                s.push_str(&format!(" {} ", t)[..]);
+                            }
+                        }
+                    } else {
+                        s.push('│');
                     }
                 }
+                s.push('║');
+                s.push('\n');
+            } else {
+                s.push('╟');
+                for j in 0..2 * self.width() - 1 {
+                    if j % 2 == 0 {
+                        s.push_str("───");
+                    } else {
+                        s.push('┼');
+                    }
+                }
+                s.push('╢');
+                s.push('\n');
             }
-            s.push('|');
-            s.push('\n');
         }
 
-        s.push('+');
-        for _i in 0..WIDTH {
-            s.push('-');
+        // bottom of the box
+        s.push('╚');
+        for i in 0..2 * self.width() - 1 {
+            if i % 2 == 0 {
+                s.push_str("═══");
+            } else {
+                s.push('╧');
+            }
         }
-        s.push('+');
+        s.push('╝');
         s.push('\n');
 
         write!(f, "{}", s)
