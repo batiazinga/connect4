@@ -1,4 +1,4 @@
-use connect4::{self, ai::BestNextPly, State, Token};
+use connect4::{self, ai::BruteForce, State, Token};
 use std::io;
 
 struct Human {
@@ -55,5 +55,5 @@ impl connect4::Player for Human {
 fn main() {
     println!("Welcome to the connect four game!");
 
-    connect4::play(BestNextPly::new(), Human::new("hello"));
+    connect4::play(BruteForce::new(5), Human::new("Human"));
 }

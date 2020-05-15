@@ -82,6 +82,7 @@ pub fn play(mut player1: impl Player, mut player2: impl Player) {
     }
 }
 
+#[derive(PartialEq, Eq)]
 pub enum Token {
     Red,
     Yellow,
