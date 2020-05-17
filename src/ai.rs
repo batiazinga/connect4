@@ -57,9 +57,31 @@ impl crate::Player for BruteForce {
 
 fn score(s: &mut State, player: &Token, current_player: &Token, max_depth: usize) -> (usize, i32) {
     // recursion stops if
+    // - game is finished (win, lose or draw)
     // - max depth is 0
-    // - game is finished (win or draw)
 
+    // game is finished
+    match s.win() {
+        Some(winner) => {
+            if winner == *player {
+                // player wins
+                let max_number_plies = (s.width() * s.height()) as i32;
+                let remaining_plies = max_depth as i32;
+                return (0, i32::MAX - max_number_plies + remaining_plies); // the sooner the better
+            } else {
+                // player loses
+                return (0, i32::MIN);
+            }
+        }
+        None => {
+            if s.plies_left() == 0 {
+                // this is a draw
+                return (0, 0);
+            }
+        }
+    }
+
+    // game is not finished
     // max depth has been reached
     if max_depth == 0 {
         let score: i32 = match player {
@@ -73,25 +95,6 @@ fn score(s: &mut State, player: &Token, current_player: &Token, max_depth: usize
             }
         };
         return (0, score);
-    }
-
-    // game is finished
-    match s.win() {
-        Some(winner) => {
-            if winner == *player {
-                // player wins
-                return (0, i32::MAX);
-            } else {
-                // player loses
-                return (0, i32::MIN);
-            }
-        }
-        None => {
-            if s.plies_left() == 0 {
-                // this is a draw
-                return (0, 0);
-            }
-        }
     }
 
     // is current player minimizing or maximizing player's score?
@@ -155,12 +158,6 @@ fn marginal_scores(s: &State) -> (i32, i32) {
     for column in 0..s.width() {
         for row in 0..s.height() - s.line_length() + 1 {
             match s.count_vertical(row, column) {
-                (4, _) => {
-                    return (i32::MAX, 0);
-                }
-                (_, 4) => {
-                    return (0, i32::MAX);
-                }
                 (n, 0) => {
                     score_r += n * n;
                 }
@@ -175,12 +172,6 @@ fn marginal_scores(s: &State) -> (i32, i32) {
     for column in 0..s.width() - s.line_length() + 1 {
         for row in 0..s.height() {
             match s.count_horizontal(row, column) {
-                (4, _) => {
-                    return (i32::MAX, 0);
-                }
-                (_, 4) => {
-                    return (0, i32::MAX);
-                }
                 (n, 0) => {
                     score_r += n * n;
                 }
@@ -195,12 +186,6 @@ fn marginal_scores(s: &State) -> (i32, i32) {
     for column in 0..s.width() - s.line_length() + 1 {
         for row in 0..s.height() - s.line_length() + 1 {
             match s.count_diag_ne(row, column) {
-                (4, _) => {
-                    return (i32::MAX, 0);
-                }
-                (_, 4) => {
-                    return (0, i32::MAX);
-                }
                 (n, 0) => {
                     score_r += n * n;
                 }
@@ -215,12 +200,6 @@ fn marginal_scores(s: &State) -> (i32, i32) {
     for column in s.line_length() - 1..s.width() {
         for row in 0..s.height() - s.line_length() + 1 {
             match s.count_diag_nw(row, column) {
-                (4, _) => {
-                    return (i32::MAX, 0);
-                }
-                (_, 4) => {
-                    return (0, i32::MAX);
-                }
                 (n, 0) => {
                     score_r += n * n;
                 }
